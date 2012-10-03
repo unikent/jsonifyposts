@@ -101,7 +101,7 @@ class JsonifyPosts {
 					'id' => $post->ID,
 					'title' => get_the_title(),
 					'link' => get_permalink(),
-					'body' => apply_filters('the_content',get_the_content()),
+					'body' => apply_filters('the_content', preg_replace('/\<a.+Report post.+\<\/a\>/', '', get_the_content())),
 					'author' => get_the_author(),
 					'categories' => $this->getPostCategories($post->ID),
 					'pubDate' => mysql2date('D, d M Y H:i:s +0000', get_post_time('Y-m-d H:i:s', true), false),
