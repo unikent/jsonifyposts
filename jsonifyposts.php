@@ -2,10 +2,10 @@
 /*
 Plugin Name: Jsonify Posts
 Plugin URI: 
-Description: Maintains a joson encoded representation of all the posts in a blog. This is saved to a static file that can then be consumes by external sources, particularly the summary snippet in pantheon. The json file generated can be found at [blog-home]/files/jsonfeeds/[blog-name].json
+Description: Maintains a JSON encoded representation of all the posts in a blog. This is saved to a static file that can then be consumed by external sources, particularly the summary snippet in Pantheon. The JSON file generated can be found at [blog-home]/files/jsonfeeds/[blog-name].json
 Version: 0.1
 Author: Justice Addison
-Author URI: 
+Author URI: http://blogs.kent.ac.uk/webdev/
 License: 
 */
 
