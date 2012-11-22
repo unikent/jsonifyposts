@@ -34,7 +34,7 @@ class JsonifyPosts {
 	public function run($id) {
 
 		// if we're in autosave mode, dont run
-		if(strcmp($_POST['action'], 'autosave') == 0 || empty($_POST['action'])){
+		if(strcmp($_POST['action'], 'autosave') == 0 || (empty($_POST['action']) && strcmp($_GET['action'], 'trash') != 0)){
 			return;
 		}
 
