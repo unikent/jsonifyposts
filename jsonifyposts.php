@@ -19,8 +19,7 @@ class JsonifyPosts {
 	/**
 	 * Our constructor
 	 */
-	public function __construct()
-	{
+	public function __construct() {
 		// lets add our run function to the relevant hooks
 		add_action('save_post', array($this, 'run'));
 		add_action('trashed_post', array($this, 'run'));
@@ -32,7 +31,6 @@ class JsonifyPosts {
 	 * (as an alternative to an rss feed).
 	 */
 	public function run($id) {
-
 		// if we're in autosave mode, dont run
 		if(strcmp($_POST['action'], 'autosave') == 0 || (empty($_POST['action']) && strcmp($_GET['action'], 'trash') != 0)){
 			return;
@@ -124,15 +122,14 @@ class JsonifyPosts {
 
 		// The final flag locks the file to prevent foos problem - maybe wrap this to check file ain't locked?
 		file_put_contents($blog_json_file, $jsoned, LOCK_EX); 
-
 	}
 
 	/**
-	 * get the complete file to our json path, creating the required folder in the process
+	 * get the complete file to our json path, creating the required folder in the process.
+	 * 
 	 * @return the complete file to our json path
 	 */
-	private function getJsonFileName(){
-
+	private function getJsonFileName() {
 		$site_url_parts = explode('/', get_option('home'));
 		$blog_name = $site_url_parts[count($site_url_parts)-1];
 
@@ -140,6 +137,7 @@ class JsonifyPosts {
 
 		//create the directory to store our json if its not there
 		$json_dir = $upload_dir['basedir'].'/jsonfeeds/';
+
 		if (!is_dir($json_dir)) {
 		    mkdir($json_dir);
 		}
@@ -149,10 +147,11 @@ class JsonifyPosts {
 
 	/**
 	 * get the custom fields for a given post
+	 * 
 	 * @param $id The ID of the post
 	 * @return The custom fields for the given post
 	 */
-	private function getPostCustomFields($id){
+	private function getPostCustomFields($id) {
 		$custom = array();
 		$cust = get_post_custom($id);
 		foreach($cust as $k=>$v) {
@@ -164,11 +163,11 @@ class JsonifyPosts {
 
 	/**
 	 * get the category names for a given post
+	 * 
 	 * @param $id The ID of the post
 	 * @return The category names for the given post
 	 */
-	private function getPostCategories($id){
-		
+	private function getPostCategories($id) {
 		$cats = array();
 		
 		$categories = get_the_category($id);
