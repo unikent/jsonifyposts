@@ -31,8 +31,10 @@ class JsonifyPosts {
 	 * (as an alternative to an rss feed).
 	 */
 	public function run($id) {
-		// if we're in autosave mode, dont run
-		if(strcmp($_POST['action'], 'autosave') == 0 || (empty($_POST['action']) && strcmp($_GET['action'], 'trash') != 0)){
+
+		// If we are doing an auto-save we don't want to run this action.
+		if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE)
+		{
 			return;
 		}
 
