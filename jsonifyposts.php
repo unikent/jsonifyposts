@@ -98,7 +98,7 @@ class JsonifyPosts {
 			setup_postdata( $post );
 			
 			// (auto)drafts or trashed files should be removed
-			if ( strcmp( $_POST[ 'post_status' ], 'draft' ) == 0 || strcmp( $_GET[ 'action' ], 'trash' ) == 0 || strcmp( $_GET[ 'action' ], 'auto-draft' ) == 0 ) {
+			if ( $this->post_expired() || strcmp( $_POST[ 'post_status' ], 'draft' ) == 0 || strcmp( $_GET[ 'action' ], 'trash' ) == 0 || strcmp( $_GET[ 'action' ], 'auto-draft' ) == 0 ) {
 				unset( $blog_data[ 'posts' ][ $post->ID ] );
 			}
 			
@@ -133,6 +133,11 @@ class JsonifyPosts {
 			global $post;
 			foreach ( $posts as $post ) {
 				setup_postdata( $post );
+
+				// Check for custom expiry times (some themes/plugins use it.)
+				if ($this->post_expired()) {
+					continue;
+				}
 				
 				$blog_data[ 'posts' ][ $post->ID ] = array(
 					 'id' => $post->ID,
@@ -161,6 +166,20 @@ class JsonifyPosts {
 		
 		// The final flag locks the file to prevent foos problem - maybe wrap this to check file ain't locked?
 		file_put_contents( $blog_json_file, $jsoned, LOCK_EX );
+	}
+
+	/**
+	 * Returns True if the current post has expired. Else False.
+	 */
+	private function post_expired() {
+		$custom_fields = get_post_custom_values('expiration-date');
+		if ($custom_fields) {
+			$expiry_date = reset($custom_fields);
+			if ($expiry_date && $expiry_date < time()) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	/**
