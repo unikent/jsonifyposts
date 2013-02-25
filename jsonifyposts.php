@@ -3,7 +3,7 @@
 Plugin Name: Jsonify Posts
 Plugin URI: 
 Description: Maintains a JSON encoded representation of all the posts in a blog. This is saved to a static file that can then be consumed by external sources, particularly the summary snippet in Pantheon. The JSON file generated can be found at [blog-home]/files/jsonfeeds/[blog-name].json
-Version: 0.1
+Version: 0.2
 Author: Justice Addison
 Author URI: http://blogs.kent.ac.uk/webdev/
 License: 
@@ -21,14 +21,45 @@ class JsonifyPosts {
 	public function __construct() {
 		// lets add our run function to the relevant hooks
 		add_action( 'save_post', array(
-			 $this,
+			$this,
 			'run' 
 		) );
 		add_action( 'trashed_post', array(
-			 $this,
+			$this,
 			'run' 
 		) );
-	}
+        add_action( 'admin_menu', array(
+        	$this,
+        	'admin_menu'
+        ) );
+    }
+       
+    /**
+     * When WordPress is setting up the admin menu, add an option for super admins to clear the json feed.
+     */
+    public function admin_menu() {
+            add_utility_page('Clearing Json Feed', 'Clear Json Feed', 'manage_network', 'jsonifier-clear', array($this, 'clear_feed'));
+    }
+    
+    /**
+     * This is called when a super admin clicks 'clear json feed'.
+     * We grab the filename and unlink it. Also post feedback to the user.
+     */
+    public function clear_feed() {
+            if ( !current_user_can( 'manage_network' ) )  {
+                    wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
+            }
+            print '<div class="wrap">';
+            print '<p>Clearing Cache...</p>';
+            $cache_file = $this->getJsonFileName();
+            print '<p>Deleting ' . $cache_file . '... '; 
+            if (unlink($cache_file)) {
+                    print 'Success!';
+            } else {
+                    print 'Failed!';
+            }
+            print '</p></div>';
+    }
 	
 	/**
 	 * The function that does all the work.
