@@ -38,7 +38,7 @@ class JsonifyPosts {
      * When WordPress is setting up the admin menu, add an option for super admins to clear the json feed.
      */
     public function admin_menu() {
-            add_utility_page('Re-Generating Json Feed', 'Refresh Json Feed', 'manage_network', 'jsonifier-regenerate', array($this, 'regen_feed'));
+            add_utility_page('Re-Generating Json Feed', 'Regen Json Feed', 'manage_network', 'jsonifier-regenerate', array($this, 'regen_feed'));
     }
     
     /**
