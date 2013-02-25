@@ -38,14 +38,14 @@ class JsonifyPosts {
      * When WordPress is setting up the admin menu, add an option for super admins to clear the json feed.
      */
     public function admin_menu() {
-            add_utility_page('Clearing Json Feed', 'Clear Json Feed', 'manage_network', 'jsonifier-clear', array($this, 'clear_feed'));
+            add_utility_page('Re-Generating Json Feed', 'Refresh Json Feed', 'manage_network', 'jsonifier-regenerate', array($this, 'regen_feed'));
     }
     
     /**
      * This is called when a super admin clicks 'clear json feed'.
      * We grab the filename and unlink it. Also post feedback to the user.
      */
-    public function clear_feed() {
+    public function regen_feed() {
             if ( !current_user_can( 'manage_network' ) )  {
                     wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
             }
@@ -59,6 +59,10 @@ class JsonifyPosts {
                     print 'Failed!';
             }
             print '</p></div>';
+
+            print '<p>Re-Generating Cache...</p>';
+            $this->run(null);
+            print '<p>All finished!</p>';
     }
 	
 	/**
@@ -72,9 +76,6 @@ class JsonifyPosts {
 			return;
 		}
 		
-		// we dont want a revision, we want the main post
-		$id = wp_is_post_revision( $id ) ? wp_is_post_revision( $id ) : $id;
-		
 		// our json file
 		$blog_json_file = $this->getJsonFileName();
 		
@@ -83,6 +84,10 @@ class JsonifyPosts {
 		
 		// if our file exists, use that rather than getting the posts from the db
 		if ( file_exists( $blog_json_file ) ) {
+		
+			// we dont want a revision, we want the main post
+			$id = wp_is_post_revision( $id ) ? wp_is_post_revision( $id ) : $id;
+
 			$blog_data = json_decode( file_get_contents( $blog_json_file ), true );
 			
 			global $post;
