@@ -3,7 +3,7 @@
 Plugin Name: Jsonify Posts
 Plugin URI: 
 Description: Maintains a JSON encoded representation of all the posts in a blog. This is saved to a static file that can then be consumed by external sources, particularly the summary snippet in Pantheon. The JSON file generated can be found at [blog-home]/files/jsonfeeds/[blog-name].json
-Version: 0.1
+Version: 0.2
 Author: Justice Addison
 Author URI: http://blogs.kent.ac.uk/webdev/
 License: 
@@ -21,14 +21,49 @@ class JsonifyPosts {
 	public function __construct() {
 		// lets add our run function to the relevant hooks
 		add_action( 'save_post', array(
-			 $this,
+			$this,
 			'run' 
 		) );
 		add_action( 'trashed_post', array(
-			 $this,
+			$this,
 			'run' 
 		) );
-	}
+        add_action( 'admin_menu', array(
+        	$this,
+        	'admin_menu'
+        ) );
+    }
+       
+    /**
+     * When WordPress is setting up the admin menu, add an option for super admins to clear the json feed.
+     */
+    public function admin_menu() {
+            add_utility_page('Re-Generating Json Feed', 'Regen Json Feed', 'manage_network', 'jsonifier-regenerate', array($this, 'regen_feed'));
+    }
+    
+    /**
+     * This is called when a super admin clicks 'clear json feed'.
+     * We grab the filename and unlink it. Also post feedback to the user.
+     */
+    public function regen_feed() {
+            if ( !current_user_can( 'manage_network' ) )  {
+                    wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
+            }
+            print '<div class="wrap">';
+            print '<p>Clearing Cache...</p>';
+            $cache_file = $this->getJsonFileName();
+            print '<p>Deleting ' . $cache_file . '... '; 
+            if (unlink($cache_file)) {
+                    print 'Success!';
+            } else {
+                    print 'Failed!';
+            }
+            print '</p></div>';
+
+            print '<p>Re-Generating Cache...</p>';
+            $this->run(null);
+            print '<p>All finished!</p>';
+    }
 	
 	/**
 	 * The function that does all the work.
@@ -41,9 +76,6 @@ class JsonifyPosts {
 			return;
 		}
 		
-		// we dont want a revision, we want the main post
-		$id = wp_is_post_revision( $id ) ? wp_is_post_revision( $id ) : $id;
-		
 		// our json file
 		$blog_json_file = $this->getJsonFileName();
 		
@@ -52,6 +84,10 @@ class JsonifyPosts {
 		
 		// if our file exists, use that rather than getting the posts from the db
 		if ( file_exists( $blog_json_file ) ) {
+		
+			// we dont want a revision, we want the main post
+			$id = wp_is_post_revision( $id ) ? wp_is_post_revision( $id ) : $id;
+
 			$blog_data = json_decode( file_get_contents( $blog_json_file ), true );
 			
 			global $post;
@@ -62,7 +98,7 @@ class JsonifyPosts {
 			setup_postdata( $post );
 			
 			// (auto)drafts or trashed files should be removed
-			if ( strcmp( $_POST[ 'post_status' ], 'draft' ) == 0 || strcmp( $_GET[ 'action' ], 'trash' ) == 0 || strcmp( $_GET[ 'action' ], 'auto-draft' ) == 0 ) {
+			if ( $this->post_expired() || strcmp( $_POST[ 'post_status' ], 'draft' ) == 0 || strcmp( $_GET[ 'action' ], 'trash' ) == 0 || strcmp( $_GET[ 'action' ], 'auto-draft' ) == 0 ) {
 				unset( $blog_data[ 'posts' ][ $post->ID ] );
 			}
 			
@@ -97,6 +133,11 @@ class JsonifyPosts {
 			global $post;
 			foreach ( $posts as $post ) {
 				setup_postdata( $post );
+
+				// Check for custom expiry times (some themes/plugins use it.)
+				if ($this->post_expired()) {
+					continue;
+				}
 				
 				$blog_data[ 'posts' ][ $post->ID ] = array(
 					 'id' => $post->ID,
@@ -125,6 +166,20 @@ class JsonifyPosts {
 		
 		// The final flag locks the file to prevent foos problem - maybe wrap this to check file ain't locked?
 		file_put_contents( $blog_json_file, $jsoned, LOCK_EX );
+	}
+
+	/**
+	 * Returns True if the current post has expired. Else False.
+	 */
+	private function post_expired() {
+		$custom_fields = get_post_custom_values('expiration-date');
+		if ($custom_fields) {
+			$expiry_date = reset($custom_fields);
+			if ($expiry_date && $expiry_date < time()) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	/**
