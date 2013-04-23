@@ -98,7 +98,12 @@ class JsonifyPosts {
 			setup_postdata( $post );
 			
 			// (auto)drafts or trashed files should be removed
-			if ( $this->post_expired() || strcmp( $_POST[ 'post_status' ], 'draft' ) == 0 || strcmp( $_GET[ 'action' ], 'trash' ) == 0 || strcmp( $_GET[ 'action' ], 'auto-draft' ) == 0 ) {
+			if ( strcmp( $_POST[ 'post_status' ], 'draft' ) == 0 || strcmp( $_GET[ 'action' ], 'trash' ) == 0 || strcmp( $_GET[ 'action' ], 'auto-draft' ) == 0 ) {
+				unset( $blog_data[ 'posts' ][ $post->ID ] );
+			}
+
+			// expired posts should not b published
+			elseif($this->post_expired()){
 				unset( $blog_data[ 'posts' ][ $post->ID ] );
 			}
 			
