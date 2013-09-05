@@ -38,7 +38,7 @@ class JsonifyPosts {
      * When WordPress is setting up the admin menu, add an option for super admins to clear the json feed.
      */
     public function admin_menu() {
-            add_utility_page('Re-Generating Json Feed', 'Regen Json Feed', 'manage_network', 'jsonifier-regenerate', array($this, 'regen_feed'));
+            add_utility_page('Re-Generating Json Feed', 'Regen Json Feed', 'manage_options', 'jsonifier-regenerate', array($this, 'regen_feed'));
     }
     
     /**
@@ -46,7 +46,7 @@ class JsonifyPosts {
      * We grab the filename and unlink it. Also post feedback to the user.
      */
     public function regen_feed() {
-            if ( !current_user_can( 'manage_network' ) )  {
+            if ( !current_user_can( 'manage_options' ) )  {
                     wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
             }
             print '<div class="wrap">';
@@ -98,7 +98,12 @@ class JsonifyPosts {
 			setup_postdata( $post );
 			
 			// (auto)drafts or trashed files should be removed
-			if ( $this->post_expired() || strcmp( $_POST[ 'post_status' ], 'draft' ) == 0 || strcmp( $_GET[ 'action' ], 'trash' ) == 0 || strcmp( $_GET[ 'action' ], 'auto-draft' ) == 0 ) {
+			if ( strcmp( $_POST[ 'post_status' ], 'draft' ) == 0 || strcmp( $_GET[ 'action' ], 'trash' ) == 0 || strcmp( $_GET[ 'action' ], 'auto-draft' ) == 0 ) {
+				unset( $blog_data[ 'posts' ][ $post->ID ] );
+			}
+
+			// expired posts should not b published
+			elseif($this->post_expired()){
 				unset( $blog_data[ 'posts' ][ $post->ID ] );
 			}
 			
