@@ -192,7 +192,10 @@ class JsonifyPosts {
 	 * @author tg79
 	 */
 	private function format_post($post){
-    	$post = array(
+		
+		setup_postdata( $post );
+		
+    		$post = array(
 			'id' => $post->ID,
 			'title' => get_the_title($post->ID),
 			'link' => get_permalink($post->ID),
@@ -201,9 +204,9 @@ class JsonifyPosts {
 			'categories' => $this->getPostCategories($post->ID),
 			'pubDate' => mysql2date('D, d M Y H:i:s +0000', get_post_time('Y-m-d H:i:s', true, $post->ID)),
 			'siteImage' => get_the_post_thumbnail($post->ID, 'full'),
-			'excerpt' => get_the_excerpt($post->ID),
+			'excerpt' => get_the_excerpt(),
 			'custom' => $this->getPostCustomFields($post->ID) 
-    	);
+    		);
 
 		return $post;
 	}
