@@ -204,7 +204,7 @@ class JsonifyPosts {
 			'categories' => $this->getPostCategories($post->ID),
 			'pubDate' => mysql2date('D, d M Y H:i:s +0000', get_post_time('Y-m-d H:i:s', true, $post->ID)),
 			'siteImage' => get_the_post_thumbnail($post->ID, 'full'),
-			'siteImage-thumbnail' => get_the_post_thumbnail($post->ID, 'thumbnail'),
+			'siteImage_thumbnail' => get_the_post_thumbnail($post->ID, 'thumbnail'),
 			'excerpt' => get_the_excerpt(),
 			'custom' => $this->getPostCustomFields($post->ID) 
     		);
